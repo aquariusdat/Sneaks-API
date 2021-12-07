@@ -1,21 +1,24 @@
-const Sneaker = require('../models/Sneaker');
-const stockXScraper = require('../scrapers/stockx-scraper');
-const flightClubScraper = require('../scrapers/flightclub-scraper');
-const goatScraper = require('../scrapers/goat-scraper');
-const stadiumGoodsScraper = require('../scrapers/stadiumgoods-scraper');
+const Sneaker = require("../models/Sneaker");
+const stockXScraper = require("../scrapers/stockx-scraper");
+const flightClubScraper = require("../scrapers/flightclub-scraper");
+const goatScraper = require("../scrapers/goat-scraper");
+const stadiumGoodsScraper = require("../scrapers/stadiumgoods-scraper");
 
 module.exports = class Sneaks {
-    /* findOne (shoeID, callback) {
-     Sneaker.findOne({
-       styleID: shoeID
-     }, function (err, shoe) {
-       if (err) {
-         console.log(err);
-         callback(err, null);
-       }
-       callback(null, shoe)
-     });
-   };*/
+  findOne(shoeID, callback) {
+    Sneaker.findOne(
+      {
+        styleID: shoeID,
+      },
+      function (err, shoe) {
+        if (err) {
+          console.log(err);
+          callback(err, null);
+        }
+        callback(null, shoe);
+      }
+    );
+  }
 
   /*exports.create = async function (req, res) {
     if (!req.params) {
@@ -34,48 +37,45 @@ module.exports = class Sneaks {
     });
   };*/
   async getProducts(keyword, count = 40, callback) {
-
     var productCounter = 0;
-    stockXScraper.getProductsAndInfo(keyword, count, function (error, products) {
-      if (error) {
-        callback(error, null)
+    stockXScraper.getProductsAndInfo(
+      keyword,
+      count,
+      function (error, products) {
+        if (error) {
+          callback(error, null);
+        }
+        products.forEach(function (shoe) {
+          var cbCounter = 0;
+          flightClubScraper.getLink(shoe, function () {
+            if (++cbCounter == 3) {
+              //if all shoes links have been parsed then return
+              if (productCounter++ + 1 == products.length) {
+                callback(null, products);
+              }
+            }
+          });
+
+          stadiumGoodsScraper.getLink(shoe, function () {
+            if (++cbCounter == 3) {
+              //if all shoes links have been parsed then return
+              if (productCounter++ + 1 == products.length) {
+                callback(null, products);
+              }
+            }
+          });
+
+          goatScraper.getLink(shoe, function () {
+            if (++cbCounter == 3) {
+              //if all shoes links have been parsed then return
+              if (productCounter++ + 1 == products.length) {
+                callback(null, products);
+              }
+            }
+          });
+        });
       }
-      products.forEach(function (shoe) {
-        var cbCounter = 0;
-        flightClubScraper.getLink(shoe, function () {
-          if (++cbCounter == 3) {
-            //if all shoes links have been parsed then return
-            if (productCounter++ + 1 == products.length) {
-              callback(null, products);
-            }
-
-          }
-        });
-
-        stadiumGoodsScraper.getLink(shoe, function () {
-          if (++cbCounter == 3) {
-            //if all shoes links have been parsed then return
-            if (productCounter++ + 1 == products.length) {
-              callback(null, products);
-            }
-
-          }
-        });
-
-        goatScraper.getLink(shoe, function () {
-          if (++cbCounter == 3) {
-            //if all shoes links have been parsed then return
-            if (productCounter++ + 1 == products.length) {
-              callback(null, products);
-            }
-
-          }
-        });
-      });
-
-    });
-
-
+    );
   }
 
   getProductPrices(shoeID, callback) {
@@ -84,36 +84,34 @@ module.exports = class Sneaks {
       stockXScraper.getPrices(shoe, function () {
         cbCounter++;
         if (cbCounter == 5) {
-          callback(null, shoe)
+          callback(null, shoe);
         }
       });
       stadiumGoodsScraper.getPrices(shoe, function () {
         cbCounter++;
         if (cbCounter == 5) {
-          callback(null, shoe)
+          callback(null, shoe);
         }
-
       });
       flightClubScraper.getPrices(shoe, function () {
         cbCounter++;
         if (cbCounter == 5) {
-          callback(null, shoe)
+          callback(null, shoe);
         }
-
       });
       goatScraper.getPrices(shoe, function () {
         cbCounter++;
         if (cbCounter == 5) {
-          callback(null, shoe)
+          callback(null, shoe);
         }
       });
       goatScraper.getPictures(shoe, function () {
         cbCounter++;
         if (cbCounter == 5) {
-          callback(null, shoe)
+          callback(null, shoe);
         }
       });
-    }
+    };
 
     getProducts(shoeID, 1, function (error, products) {
       if (error || products[0].styleID.toLowerCase() != shoeID.toLowerCase()) {
@@ -123,34 +121,34 @@ module.exports = class Sneaks {
       }
       getPrices(products[0]);
     });
-  };
+  }
 
-  /*findAll(callback) {
+  findAll(callback) {
     Sneaker.find()
-      .then(sneaks => {
+      .then((sneaks) => {
         callback(null, sneaks);
-      }).catch(err => {
-        callback(err, null)
+      })
+      .catch((err) => {
+        callback(err, null);
       });
-  };*/
+  }
 
   getMostPopular(count, callback) {
     getProducts("", count, function (error, products) {
       if (error) {
         callback(error, null);
       } else {
-        callback(null, products)
+        callback(null, products);
       }
     });
-  };
-}
-
+  }
+};
 
 var getProducts = function (keyword, count = 40, callback) {
   var productCounter = 0;
   stockXScraper.getProductsAndInfo(keyword, count, function (error, products) {
     if (error) {
-      callback(error, null)
+      callback(error, null);
     }
     products.forEach(function (shoe) {
       var cbCounter = 0;
@@ -169,7 +167,6 @@ var getProducts = function (keyword, count = 40, callback) {
           if (productCounter++ + 1 == products.length) {
             callback(null, products);
           }
-
         }
       });
 
@@ -183,4 +180,4 @@ var getProducts = function (keyword, count = 40, callback) {
       });
     });
   });
-}
+};
